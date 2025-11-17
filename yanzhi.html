@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>我的言值 - 某某科技有限公司</title>
+  <!-- 引入Font Awesome图标库（用于支付方式图标） -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* 基础重置与全局样式 */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "PingFang SC", "微软雅黑", sans-serif; }
+    body { background-color: #F5F7FA; padding: 32px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    /* 公司标题 */
+    .company-title { font-size: 22px; font-weight: 700; color: #333; margin-bottom: 28px; }
+
+    /* 1. 核心言值模块（放大核心+时效明确） */
+    .value-card {
+      background: #FFF;
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      margin-bottom: 24px;
+    }
+    .value-card h2 { font-size: 18px; font-weight: 700; color: #333; margin-bottom: 24px; }
+    .value-header { display: flex; align-items: center; justify-content: space-between; }
+    .value-info { line-height: 1.4; }
+    .value-amount { font-size: 28px; font-weight: 700; color: #1A3468; }
+    .value-time { font-size: 12px; color: #999; margin-top: 4px; }
+    .recharge-btn {
+      padding: 10px 24px;
+      background: #2F80ED;
+      color: #FFF;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .recharge-btn:hover { background: #1D6FE2; }
+
+    /* 2. 授信额度模块（通俗化+可视化） */
+    .credit-group {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    .credit-card {
+      flex: 1;
+      background: #FFF;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .credit-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .credit-info {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1A3468;
+      margin-bottom: 8px;
+    }
+    .credit-desc { font-size: 14px; color: #666; line-height: 1.5; }
+    .info-icon {
+      font-size: 14px;
+      color: #999;
+      cursor: help;
+      position: relative;
+    }
+    .info-icon .tooltip {
+      display: none;
+      position: absolute;
+      top: 24px;
+      left: 0;
+      background: #222;
+      color: #FFF;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.4;
+      white-space: nowrap;
+      z-index: 99;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .info-icon:hover .tooltip { display: block; }
+    .progress-wrap {
+      width: 100%;
+      height: 8px;
+      background: #F0F2F5;
+      border-radius: 4px;
+      margin-top: 12px;
+    }
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: #E0E4E8;
+      border-radius: 4px;
+    }
+
+    /* 3. 充值记录模块（补充细节+易查询） */
+    .record-card {
+      background: #FFF;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      margin-bottom: 24px;
+    }
+    .record-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .record-header h3 { font-size: 16px; font-weight: 700; color: #333; }
+    .view-more { font-size: 14px; color: #2F80ED; cursor: pointer; }
+    .record-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid #F5F7FA;
+    }
+    .record-item:last-child { border-bottom: none; }
+    .record-detail { display: flex; align-items: center; gap: 12px; }
+    .pay-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFF;
+      font-size: 18px;
+    }
+    .alipay { background: #108EE9; }
+    .wechat { background: #00D26A; }
+    .record-time { font-size: 14px; color: #666; margin-bottom: 4px; }
+    .record-type { font-size: 12px; color: #999; }
+    .record-amount { font-size: 14px; color: #27AE60; font-weight: 600; }
+
+    /* 4. 使用统计模块（可视化+趋势提示） */
+    .stat-card {
+      background: #FFF;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .stat-header h3 { font-size: 16px; font-weight: 700; color: #333; }
+    .time-filter {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .filter-btn {
+      padding: 8px 16px;
+      border: 1px solid #E0E4E8;
+      border-radius: 8px;
+      background: #FFF;
+      font-size: 14px;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .filter-btn.active {
+      background: #F5F9FF;
+      border-color: #2F80ED;
+      color: #2F80ED;
+    }
+    .date-input {
+      padding: 8px 12px;
+      border: 1px solid #E0E4E8;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #666;
+      width: 200px;
+    }
+    .chart-wrap {
+      height: 300px;
+      margin-bottom: 24px;
+      position: relative;
+      background: url('https://via.placeholder.com/1200x300?text=言值使用趋势图') center/cover no-repeat;
+    }
+    .peak-tag {
+      position: absolute;
+      top: 60px;
+      left: 62%;
+      padding: 4px 8px;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid #E0E4E8;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #1A3468;
+      font-weight: 600;
+    }
+    .usage-hint {
+      padding: 12px 16px;
+      background: #F5F9FF;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 公司标题 -->
+    <h1 class="company-title">某某科技有限公司</h1>
+
+    <!-- 1. 核心言值模块 -->
+    <div class="value-card">
+      <h2>我的言值</h2>
+      <div class="value-header">
+        <div class="value-info">
+          <div class="value-amount">2,573,839</div>
+          <div class="value-time">截至今日（2025-11-06）</div>
+        </div>
+        <button class="recharge-btn">充值</button>
+      </div>
+    </div>
+
+    <!-- 2. 授信额度模块 -->
+    <div class="credit-group">
+      <div class="credit-card">
+        <h3>
+          授信额度
+          <span class="info-icon">
+            ?
+            <div class="tooltip">授信为言值不足时的应急额度<br>最高200言值 | 有效期30天 | 超期未还暂停使用</div>
+          </span>
+        </h3>
+        <div class="credit-info">200 言值</div>
+        <div class="credit-desc">言值不足时，可用此额度应急（最高200言值）</div>
+      </div>
+      <div class="credit-card">
+        <h3>已使用授信额度</h3>
+        <div class="credit-info">0 言值</div>
+        <div class="progress-wrap">
+          <div class="progress-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 充值记录模块 -->
+    <div class="record-card">
+      <div class="record-header">
+        <h3>言值充值记录</h3>
+        <div class="view-more">查看更多</div>
+      </div>
+      <div class="record-item">
+        <div class="record-detail">
+          <span class="pay-icon alipay"><i class="fab fa-alipay"></i></span>
+          <div>
+            <div class="record-time">2025-11-05 17:21:36</div>
+            <div class="record-type">充值</div>
+          </div>
+        </div>
+        <div class="record-amount">+10,000 言值</div>
+      </div>
+      <div class="record-item">
+        <div class="record-detail">
+          <span class="pay-icon wechat"><i class="fab fa-weixin"></i></span>
+          <div>
+            <div class="record-time">2025-11-05 10:32:12</div>
+            <div class="record-type">充值</div>
+          </div>
+        </div>
+        <div class="record-amount">+10,000 言值</div>
+      </div>
+    </div>
+
+    <!-- 4. 使用统计模块 -->
+    <div class="stat-card">
+      <div class="stat-header">
+        <h3>言值使用统计</h3>
+        <div class="time-filter">
+          <button class="filter-btn active">近7天</button>
+          <button class="filter-btn">近30天</button>
+          <input type="text" class="date-input" value="2025-10-31 至 2025-11-06" readonly>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <div class="peak-tag">820</div>
+      </div>
+      <div class="usage-hint">
+        近7天日均消耗120言值，当前剩余言值可使用约21天
+      </div>
+    </div>
+  </div>
+</body>
+</html>
