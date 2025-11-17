@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>淘问回复检测助手 - 淘宝问大家回复查询工具</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义主题 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#36CFC9',
+            success: '#52C41A',
+            warning: '#FAAD14',
+            danger: '#FF4D4F',
+            neutral: '#F5F7FA',
+            'neutral-dark': '#4E5969'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .step-active {
+        @apply bg-primary text-white border-primary;
+      }
+      .step-completed {
+        @apply bg-success text-white border-success;
+      }
+      .step-pending {
+        @apply bg-white text-neutral-dark border-gray-300;
+      }
+      .transition-height {
+        transition: max-height 0.5s ease-in-out;
+      }
+    }
+  </style>
+</head>
+
+<body class="font-inter bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+  <!-- 导航栏 -->
+  <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300" id="navbar">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center space-x-2">
+          <i class="fa fa-search text-primary text-2xl"></i>
+          <div>
+            <h1 class="text-xl font-bold text-primary">淘问回复检测助手</h1>
+            <p class="text-xs text-gray-500">快速定位问大家特定回复</p>
+          </div>
+        </div>
+        
+        <div class="hidden md:flex items-center space-x-6">
+          <a href="#guide" class="text-gray-600 hover:text-primary transition-colors">使用指南</a>
+          <a href="#faq" class="text-gray-600 hover:text-primary transition-colors">常见问题</a>
+          <button class="flex items-center text-gray-600 hover:text-primary transition-colors">
+            <i class="fa fa-question-circle mr-1"></i>
+            <span>帮助中心</span>
+          </button>
+          <button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md transition-all transform hover:scale-105">
+            <i class="fa fa-headphones mr-1"></i>联系客服
+          </button>
+        </div>
+        
+        <button class="md:hidden text-gray-600" id="mobileMenuBtn">
+          <i class="fa fa-bars text-xl"></i>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 移动端菜单 -->
+    <div class="md:hidden hidden bg-white border-t" id="mobileMenu">
+      <div class="container mx-auto px-4 py-3 space-y-3">
+        <a href="#guide" class="block text-gray-600 hover:text-primary py-2">使用指南</a>
+        <a href="#faq" class="block text-gray-600 hover:text-primary py-2">常见问题</a>
+        <a href="#" class="block text-gray-600 hover:text-primary py-2">
+          <i class="fa fa-question-circle mr-1"></i>帮助中心
+        </a>
+        <button class="w-full bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md">
+          <i class="fa fa-headphones mr-1"></i>联系客服
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main class="flex-grow">
+    <!-- 英雄区 -->
+    <section class="bg-gradient-to-r from-primary to-primary/80 text-white py-12 md:py-20">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl mx-auto text-center">
+          <h2 class="text-[clamp(1.8rem,4vw,2.8rem)] font-bold mb-4 leading-tight">
+            淘宝问大家回复智能检测工具
+          </h2>
+          <p class="text-white/90 text-[clamp(1rem,2vw,1.2rem)] mb-8">
+            一键检测指定问题是否被目标用户回复，告别手动翻查，提升运营效率
+          </p>
+          <div class="flex flex-wrap justify-center gap-4">
+            <a href="#tool" class="bg-white text-primary px-6 py-3 rounded-md font-medium hover:shadow-lg transition-all transform hover:-translate-y-1">
+              立即使用 <i class="fa fa-arrow-right ml-1"></i>
+            </a>
+            <a href="#guide" class="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-md font-medium hover:bg-white/30 transition-all">
+              查看教程 <i class="fa fa-play-circle ml-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 工具核心区域 -->
+    <section id="tool" class="py-12 bg-white">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto">
+          <!-- 步骤指示器 -->
+          <div class="mb-12">
+            <h3 class="text-2xl font-bold text-center mb-8 text-gray-800">操作流程</h3>
+            
+            <div class="relative">
+              <!-- 连接线 -->
+              <div class="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 -translate-y-1/2 z-0"></div>
+              <div class="absolute top-1/2 left-0 h-1 bg-primary -translate-y-1/2 z-10 transition-all duration-500" id="progressBar" style="width: 0%"></div>
+              
+              <!-- 步骤 -->
+              <div class="flex justify-between relative z-20">
+                <div class="flex flex-col items-center" id="step1Indicator">
+                  <div class="w-10 h-10 rounded-full border-2 step-active flex items-center justify-center mb-2 transition-all duration-300">
+                    <i class="fa fa-download"></i>
+                  </div>
+                  <span class="text-sm font-medium text-center">下载模板</span>
+                </div>
+                
+                <div class="flex flex-col items-center" id="step2Indicator">
+                  <div class="w-10 h-10 rounded-full border-2 step-pending flex items-center justify-center mb-2 transition-all duration-300">
+                    <i class="fa fa-file-excel-o"></i>
+                  </div>
+                  <span class="text-sm font-medium text-center">填写数据</span>
+                </div>
+                
+                <div class="flex flex-col items-center" id="step3Indicator">
+                  <div class="w-10 h-10 rounded-full border-2 step-pending flex items-center justify-center mb-2 transition-all duration-300">
+                    <i class="fa fa-upload"></i>
+                  </div>
+                  <span class="text-sm font-medium text-center">上传检测</span>
+                </div>
+                
+                <div class="flex flex-col items-center" id="step4Indicator">
+                  <div class="w-10 h-10 rounded-full border-2 step-pending flex items-center justify-center mb-2 transition-all duration-300">
+                    <i class="fa fa-check"></i>
+                  </div>
+                  <span class="text-sm font-medium text-center">下载结果</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 步骤内容区 -->
+          <div class="bg-neutral rounded-xl p-6 shadow-sm">
+            <!-- 步骤1: 下载模板 -->
+            <div id="step1" class="transition-all duration-500">
+              <div class="text-center mb-8">
+                <h4 class="text-xl font-bold text-gray-800 mb-2">第一步：下载模板</h4>
+                <p class="text-gray-600">获取标准模板，按格式填写需要检测的内容</p>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <div class="w-full max-w-md bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm hover:shadow-md transition-shadow">
+                  <div class="flex items-center mb-4">
+                    <i class="fa fa-file-excel-o text-success text-3xl mr-4"></i>
+                    <div>
+                      <h5 class="font-medium">检测模板.xlsx</h5>
+                      <p class="text-sm text-gray-500">包含问题ID和目标回复人列</p>
+                    </div>
+                  </div>
+                  
+                  <div class="border-t pt-4">
+                    <div class="flex flex-wrap gap-2 mb-3">
+                      <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">.xlsx格式</span>
+                      <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">大小 < 2MB</span>
+                      <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">2列数据</span>
+                    </div>
+                    
+                    <button id="downloadTemplate" class="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-md transition-all flex items-center justify-center">
+                      <i class="fa fa-download mr-2"></i>
+                      <span>下载模板</span>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="w-full max-w-md bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
+                  <div class="flex">
+                    <i class="fa fa-info-circle text-primary mt-1 mr-3"></i>
+                    <div>
+                      <h5 class="font-medium text-primary mb-1">模板说明</h5>
+                      <p class="text-sm text-gray-600 mb-2">模板包含两列必填信息：</p>
+                      <ul class="text-sm text-gray-600 space-y-1 list-disc list-inside">
+                        <li>A列：问大家问题ID（从淘宝页面获取）</li>
+                        <li>B列：需要检测的回复人昵称</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                
+                <button id="toStep2" class="px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-md transition-all transform hover:scale-105">
+                  已下载模板，继续 <i class="fa fa-arrow-right ml-1"></i>
+                </button>
+              </div>
+            </div>
+            
+            <!-- 步骤2: 上传文件 -->
+            <div id="step2" class="hidden transition-all duration-500">
+              <div class="text-center mb-8">
+                <h4 class="text-xl font-bold text-gray-800 mb-2">第二步：上传文件</h4>
+                <p class="text-gray-600">上传填写好的Excel文件，准备开始检测</p>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <!-- 上传区域 -->
+                <div id="uploadArea" class="w-full max-w-md border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary transition-colors mb-6 cursor-pointer bg-white">
+                  <i class="fa fa-cloud-upload text-5xl text-gray-400 mb-4"></i>
+                  <h5 class="font-medium text-gray-700 mb-2">拖拽文件到此处或点击上传</h5>
+                  <p class="text-sm text-gray-500 mb-4">支持.xlsx格式，文件大小不超过10MB</p>
+                  <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md transition-colors">
+                    选择文件
+                  </button>
+                  <input type="file" id="fileInput" accept=".xlsx" class="hidden" />
+                </div>
+                
+                <!-- 上传文件信息 (默认隐藏) -->
+                <div id="fileInfo" class="w-full max-w-md hidden mb-6">
+                  <div class="bg-white border border-gray-200 rounded-lg p-4 flex items-center">
+                    <i class="fa fa-file-excel-o text-success text-2xl mr-3"></i>
+                    <div class="flex-grow">
+                      <div class="flex justify-between">
+                        <h5 class="font-medium text-gray-800 truncate" id="fileName">填写完成的模板.xlsx</h5>
+                        <span class="text-sm text-gray-500" id="fileSize">1.2 MB</span>
+                      </div>
+                      <div class="mt-2 h-1 bg-gray-100 rounded-full overflow-hidden">
+                        <div class="bg-primary h-full rounded-full" style="width: 100%"></div>
+                      </div>
+                    </div>
+                    <button id="removeFile" class="ml-3 text-gray-400 hover:text-danger transition-colors">
+                      <i class="fa fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- 错误提示 (默认隐藏) -->
+                <div id="uploadError" class="w-full max-w-md hidden mb-6 bg-red-50 border border-red-100 rounded-lg p-4">
+                  <div class="flex">
+                    <i class="fa fa-exclamation-circle text-danger mt-1 mr-3"></i>
+                    <p class="text-sm text-red-600" id="errorMessage">文件格式错误，请上传.xlsx格式的文件</p>
+                  </div>
+                </div>
+                
+                <div class="flex gap-4">
+                  <button id="backToStep1" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md transition-colors">
+                    <i class="fa fa-arrow-left mr-1"></i> 返回
+                  </button>
+                  <button id="toStep3" class="px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-md transition-all transform hover:scale-105" disabled>
+                    开始检测 <i class="fa fa-play ml-1"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 步骤3: 检测中 -->
+            <div id="step3" class="hidden transition-all duration-500">
+              <div class="text-center mb-8">
+                <h4 class="text-xl font-bold text-gray-800 mb-2">第三步：检测中</h4>
+                <p class="text-gray-600">系统正在处理您的请求，请稍候...</p>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <div class="w-full max-w-md bg-white rounded-lg p-6 mb-8 shadow-sm">
+                  <!-- 加载动画 -->
+                  <div class="flex justify-center mb-6">
+                    <div class="w-16 h-16 border-4 border-gray-200 border-t-primary rounded-full animate-spin"></div>
+                  </div>
+                  
+                  <!-- 进度显示 -->
+                  <div class="mb-4">
+                    <div class="flex justify-between mb-2">
+                      <span class="text-sm text-gray-600">检测进度</span>
+                      <span class="text-sm font-medium text-primary" id="detectionProgress">0%</span>
+                    </div>
+                    <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div id="progressBarInside" class="bg-primary h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                  </div>
+                  
+                  <!-- 状态信息 -->
+                  <div class="text-center">
+                    <p class="text-sm text-gray-600" id="detectionStatus">正在初始化检测程序...</p>
+                    <p class="text-xs text-gray-500 mt-2">预计剩余时间: <span id="remainingTime">--:--</span></p>
+                  </div>
+                </div>
+                
+                <button id="cancelDetection" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md transition-colors">
+                  <i class="fa fa-times mr-1"></i> 取消检测
+                </button>
+              </div>
+            </div>
+            
+            <!-- 步骤4: 下载结果 -->
+            <div id="step4" class="hidden transition-all duration-500">
+              <div class="text-center mb-8">
+                <h4 class="text-xl font-bold text-gray-800 mb-2">第四步：检测完成</h4>
+                <p class="text-gray-600">已生成检测结果，点击下载查看详情</p>
+              </div>
+              
+              <div class="flex flex-col items-center">
+                <div class="w-full max-w-md bg-white border border-success/30 rounded-lg p-6 mb-6 shadow-sm">
+                  <div class="flex justify-center mb-4">
+                    <div class="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center">
+                      <i class="fa fa-check text-success text-2xl"></i>
+                    </div>
+                  </div>
+                  
+                  <div class="text-center mb-4">
+                    <h5 class="font-medium text-gray-800 mb-1">检测结果已生成</h5>
+                    <p class="text-sm text-gray-600">共检测 <span id="totalItems" class="font-medium">24</span> 条数据，其中 <span id="foundItems" class="font-medium text-success">8</span> 条有匹配回复</p>
+                  </div>
+                  
+                  <button id="downloadResult" class="w-full bg-success hover:bg-success/90 text-white py-3 rounded-md transition-all flex items-center justify-center">
+                    <i class="fa fa-download mr-2"></i>
+                    <span>下载检测结果</span>
+                  </button>
+                </div>
+                
+                <div class="w-full max-w-md bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                  <h5 class="font-medium text-gray-700 mb-3 flex items-center">
+                    <i class="fa fa-info-circle text-gray-500 mr-2"></i> 结果说明
+                  </h5>
+                  <ul class="text-sm text-gray-600 space-y-2">
+                    <li class="flex items-start">
+                      <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                      <span>结果包含原始信息及"是否被回复"状态</span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                      <span>有回复的条目将显示回复内容和回复时间</span>
+                    </li>
+                    <li class="flex items-start">
+                      <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                      <span>支持Excel筛选和排序功能，方便数据分析</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div class="flex gap-4">
+                  <button id="backToStep2" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md transition-colors">
+                    <i class="fa fa-repeat mr-1"></i> 重新检测
+                  </button>
+                  <button id="finishProcess" class="px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-md transition-all transform hover:scale-105">
+                    完成 <i class="fa fa-check ml-1"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 使用指南 -->
+    <section id="guide" class="py-12 bg-neutral">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto">
+          <h3 class="text-2xl font-bold text-center mb-2 text-gray-800">使用指南</h3>
+          <p class="text-gray-600 text-center mb-10">详细了解如何使用工具获取最佳检测效果</p>
+          
+          <div class="grid md:grid-cols-2 gap-6">
+            <!-- 指南卡片1 -->
+            <div class="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <i class="fa fa-id-card-o text-primary text-xl"></i>
+              </div>
+              <h4 class="text-lg font-bold mb-3 text-gray-800">如何获取问题ID？</h4>
+              <ol class="text-gray-600 space-y-3 list-decimal list-inside">
+                <li>打开淘宝商品详情页，找到"问大家"板块</li>
+                <li>找到需要检测的问题，右键点击问题内容</li>
+                <li>选择"复制链接地址"或"复制链接"</li>
+                <li>从链接中提取ID参数（如https://xxx?id=123456，ID为123456）</li>
+              </ol>
+              <div class="mt-4 pt-4 border-t border-gray-100">
+                <img src="https://picsum.photos/id/180/400/200" alt="问题ID获取示例" class="w-full h-40 object-cover rounded-lg">
+              </div>
+            </div>
+            
+            <!-- 指南卡片2 -->
+            <div class="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <i class="fa fa-user-o text-primary text-xl"></i>
+              </div>
+              <h4 class="text-lg font-bold mb-3 text-gray-800">如何填写回复人昵称？</h4>
+              <ul class="text-gray-600 space-y-3 list-disc list-inside">
+                <li>需与用户在问大家中显示的昵称完全一致</li>
+                <li>包含所有特殊符号和空格，区分大小写</li>
+                <li>如果昵称包含表情符号，也需要准确复制</li>
+                <li>可直接从问大家页面复制粘贴昵称</li>
+              </ul>
+              <div class="mt-4 pt-4 border-t border-gray-100">
+                <img src="https://picsum.photos/id/0/400/200" alt="昵称填写示例" class="w-full h-40 object-cover rounded-lg">
+              </div>
+            </div>
+            
+            <!-- 指南卡片3 -->
+            <div class="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <i class="fa fa-file-text-o text-primary text-xl"></i>
+              </div>
+              <h4 class="text-lg font-bold mb-3 text-gray-800">模板填写规范</h4>
+              <ul class="text-gray-600 space-y-3 list-disc list-inside">
+                <li>不要修改模板中的列名和顺序</li>
+                <li>问题ID和昵称不能为空</li>
+                <li>单次检测建议不超过500条数据</li>
+                <li>保存时请使用.xlsx格式，不要转为其他格式</li>
+              </ul>
+              <div class="mt-4 pt-4 border-t border-gray-100">
+                <img src="https://picsum.photos/id/160/400/200" alt="模板填写示例" class="w-full h-40 object-cover rounded-lg">
+              </div>
+            </div>
+            
+            <!-- 指南卡片4 -->
+            <div class="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <i class="fa fa-bar-chart text-primary text-xl"></i>
+              </div>
+              <h4 class="text-lg font-bold mb-3 text-gray-800">结果解读说明</h4>
+              <ul class="text-gray-600 space-y-3 list-disc list-inside">
+                <li>"是"表示目标用户已回复该问题</li>
+                <li>"否"表示目标用户未回复该问题</li>
+                <li>回复时间为用户提交回复的时间</li>
+                <li>回复内容已过滤敏感信息</li>
+              </ul>
+              <div class="mt-4 pt-4 border-t border-gray-100">
+                <img src="https://picsum.photos/id/201/400/200" alt="结果解读示例" class="w-full h-40 object-cover rounded-lg">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 常见问题 -->
+    <section id="faq" class="py-12 bg-white">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl mx-auto">
+          <h3 class="text-2xl font-bold text-center mb-2 text-gray-800">常见问题</h3>
+          <p class="text-gray-600 text-center mb-10">解答您在使用过程中可能遇到的问题</p>
+          
+          <div class="space-y-4">
+            <!-- FAQ项 -->
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+              <button class="faq-toggle w-full flex justify-between items-center p-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors">
+                <span class="font-medium text-gray-800">检测结果需要多长时间？</span>
+                <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+              </button>
+              <div class="faq-content hidden p-4 pt-0 border-t border-gray-100">
+                <p class="text-gray-600">检测时间取决于您上传的数据量，一般情况下：
+                  <br>• 100条以内数据：1分钟内完成
+                  <br>• 100-500条数据：1-3分钟
+                  <br>• 高峰期可能会有一定延迟，请耐心等待</p>
+              </div>
+            </div>
+            
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+              <button class="faq-toggle w-full flex justify-between items-center p-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors">
+                <span class="font-medium text-gray-800">为什么检测结果显示"未找到"？</span>
+                <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+              </button>
+              <div class="faq-content hidden p-4 pt-0 border-t border-gray-100">
+                <p class="text-gray-600">可能的原因包括：
+                  <br>• 问题ID不正确或已失效
+                  <br>• 昵称填写与实际显示不一致
+                  <br>• 目标用户确实未回复该问题
+                  <br>• 该问题或回复已被淘宝平台删除</p>
+              </div>
+            </div>
+            
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+              <button class="faq-toggle w-full flex justify-between items-center p-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors">
+                <span class="font-medium text-gray-800">每次可以检测多少条数据？</span>
+                <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+              </button>
+              <div class="faq-content hidden p-4 pt-0 border-t border-gray-100">
+                <p class="text-gray-600">单次上传的Excel文件中，最多支持500条检测数据。如果您有更多数据需要检测，建议分多次上传。批量检测功能正在开发中，敬请期待。</p>
+              </div>
+            </div>
+            
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+              <button class="faq-toggle w-full flex justify-between items-center p-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors">
+                <span class="font-medium text-gray-800">检测结果中的回复内容是实时的吗？</span>
+                <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+              </button>
+              <div class="faq-content hidden p-4 pt-0 border-t border-gray-100">
+                <p class="text-gray-600">是的，系统会实时抓取淘宝问大家的最新数据。如果用户在检测后又进行了回复，您需要重新提交检测才能获取最新结果。</p>
+              </div>
+            </div>
+            
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+              <button class="faq-toggle w-full flex justify-between items-center p-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors">
+                <span class="font-medium text-gray-800">该工具是否收费？</span>
+                <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+              </button>
+              <div class="faq-content hidden p-4 pt-0 border-t border-gray-100">
+                <p class="text-gray-600">目前工具处于beta测试阶段，每位用户每天可免费检测10次，每次最多500条数据。后续我们会推出更多高级功能和付费套餐，满足不同用户的需求。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 行动召唤 -->
+    <section class="py-12 bg-primary/5">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl mx-auto text-center">
+          <h3 class="text-2xl font-bold mb-4 text-gray-800">开始使用淘问回复检测助手</h3>
+          <p class="text-gray-600 mb-8">提升您的淘宝店铺运营效率，快速掌握问大家互动动态</p>
+          <a href="#tool" class="inline-block bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-md font-medium transition-all transform hover:scale-105">
+            立即开始检测 <i class="fa fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-gray-800 text-white py-10">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <i class="fa fa-search text-primary text-xl"></i>
+            <h3 class="text-lg font-bold">淘问回复检测助手</h3>
+          </div>
+          <p class="text-gray-400 text-sm">专业的淘宝问大家回复检测工具，帮助商家高效管理店铺互动。</p>
+        </div>
+        
+        <div>
+          <h4 class="text-md font-bold mb-4">快速链接</h4>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li><a href="#tool" class="hover:text-primary transition-colors">使用工具</a></li>
+            <li><a href="#guide" class="hover:text-primary transition-colors">使用指南</a></li>
+            <li><a href="#faq" class="hover:text-primary transition-colors">常见问题</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">帮助中心</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-md font-bold mb-4">联系我们</h4>
+          <ul class="space-y-2 text-gray-400 text-sm">
+            <li class="flex items-center"><i class="fa fa-envelope-o mr-2 text-primary"></i> support@taowenchaxun.com</li>
+            <li class="flex items-center"><i class="fa fa-qq mr-2 text-primary"></i> 123456789</li>
+            <li class="flex items-center"><i class="fa fa-weixin mr-2 text-primary"></i> taowenchaxun</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-md font-bold mb-4">关注我们</h4>
+          <p class="text-gray-400 text-sm mb-4">获取最新功能更新和使用技巧</p>
+          <div class="flex space-x-4">
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-primary transition-colors">
+              <i class="fa fa-weibo"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-primary transition-colors">
+              <i class="fa fa-weixin"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-primary transition-colors">
+              <i class="fa fa-qq"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-500 text-sm">
+        <p>© 2024 淘问回复检测助手 版权所有</p>
+        <p class="mt-1">本工具仅用于合法店铺运营分析，请勿滥用</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    // 导航栏滚动效果
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        navbar.classList.add('py-2');
+        navbar.classList.remove('py-4');
+        navbar.classList.add('shadow');
+      } else {
+        navbar.classList.add('py-4');
+        navbar.classList.remove('py-2');
+        navbar.classList.remove('shadow');
+      }
+    });
+    
+    // 移动端菜单切换
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+    
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+          // 关闭移动菜单
+          mobileMenu.classList.add('hidden');
+        }
+      });
+    });
+    
+    // 步骤切换逻辑
+    const steps = ['step1', 'step2', 'step3', 'step4'];
+    const stepIndicators = ['step1Indicator', 'step2Indicator', 'step3Indicator', 'step4Indicator'];
+    let currentStep = 1;
+    
+    function goToStep(step) {
+      // 隐藏所有步骤
+      steps.forEach(s => {
+        document.getElementById(s).classList.add('hidden');
+      });
+      
+      // 重置所有指示器状态
+      stepIndicators.forEach((indicator, index) => {
+        const circle = document.querySelector(`#${indicator} .rounded-full`);
+        if (index + 1 < step) {
+          circle.classList.remove('step-active', 'step-pending');
+          circle.classList.add('step-completed');
+          circle.innerHTML = '<i class="fa fa-check"></i>';
+        } else if (index + 1 === step) {
+          circle.classList.remove('step-completed', 'step-pending');
+          circle.classList.add('step-active');
+          if (step === 1) circle.innerHTML = '<i class="fa fa-download"></i>';
+          if (step === 2) circle.innerHTML = '<i class="fa fa-file-excel-o"></i>';
+          if (step === 3) circle.innerHTML = '<i class="fa fa-upload"></i>';
+          if (step === 4) circle.innerHTML = '<i class="fa fa-check"></i>';
+        } else {
+          circle.classList.remove('step-active', 'step-completed');
+          circle.classList.add('step-pending');
+          if (index + 1 === 2) circle.innerHTML = '<i class="fa fa-file-excel-o"></i>';
+          if (index + 1 === 3) circle.innerHTML = '<i class="fa fa-upload"></i>';
+          if (index + 1 === 4) circle.innerHTML = '<i class="fa fa-check"></i>';
+        }
+      });
+      
+      // 显示当前步骤
+      document.getElementById(`step${step}`).classList.remove('hidden');
+      currentStep = step;
+      
+      // 更新进度条
+      const progress = ((step - 1) / (steps.length - 1)) * 100;
+      document.getElementById('progressBar').style.width = `${progress}%`;
+      
+      // 滚动到工具区域
+      document.getElementById('tool').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    // 步骤按钮事件
+    document.getElementById('toStep2').addEventListener('click', () => goToStep(2));
+    document.getElementById('backToStep1').addEventListener('click', () => goToStep(1));
+    document.getElementById('toStep3').addEventListener('click', () => {
+      goToStep(3);
+      startDetectionSimulation();
+    });
+    document.getElementById('cancelDetection').addEventListener('click', () => goToStep(2));
+    document.getElementById('backToStep2').addEventListener('click', () => goToStep(2));
+    document.getElementById('finishProcess').addEventListener('click', () => goToStep(1));
+    
+    // 下载模板
+    document.getElementById('downloadTemplate').addEventListener('click', () => {
+      // 模拟下载
+      showToast('模板下载中...');
+      setTimeout(() => {
+        showToast('模板下载完成', 'success');
+      }, 1000);
+    });
+    
+    // 文件上传功能
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const removeFile = document.getElementById('removeFile');
+    const uploadError = document.getElementById('uploadError');
+    const errorMessage = document.getElementById('errorMessage');
+    const toStep3Btn = document.getElementById('toStep3');
+    
+    uploadArea.addEventListener('click', () => {
+      fileInput.click();
+    });
+    
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('border-primary');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('border-primary');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('border-primary');
+      
+      if (e.dataTransfer.files.length) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+    
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) {
+        handleFile(fileInput.files[0]);
+      }
+    });
+    
+    function handleFile(file) {
+      // 验证文件类型
+      if (!file.name.endsWith('.xlsx')) {
+        showError('文件格式错误，请上传.xlsx格式的文件');
+        return;
+      }
+      
+      // 验证文件大小
+      if (file.size > 10 * 1024 * 1024) { // 10MB
+        showError('文件过大，请上传不超过10MB的文件');
+        return;
+      }
+      
+      // 显示文件信息
+      hideError();
+      fileName.textContent = file.name;
+      fileSize.textContent = formatFileSize(file.size);
+      fileInfo.classList.remove('hidden');
+      uploadArea.classList.add('hidden');
+      
+      // 启用下一步按钮
+      toStep3Btn.removeAttribute('disabled');
+      toStep3Btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+    
+    removeFile.addEventListener('click', () => {
+      fileInfo.classList.add('hidden');
+      uploadArea.classList.remove('hidden');
+      fileInput.value = '';
+      
+      // 禁用下一步按钮
+      toStep3Btn.setAttribute('disabled', 'true');
+      toStep3Btn.classList.add('opacity-50', 'cursor-not-allowed');
+      hideError();
+    });
+    
+    function showError(message) {
+      errorMessage.textContent = message;
+      uploadError.classList.remove('hidden');
+    }
+    
+    function hideError() {
+      uploadError.classList.add('hidden');
+    }
+    
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      else return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+    
+    // 模拟检测过程
+    function startDetectionSimulation() {
+      const progressBar = document.getElementById('progressBarInside');
+      const progressText = document.getElementById('detectionProgress');
+      const statusText = document.getElementById('detectionStatus');
+      const remainingTime = document.getElementById('remainingTime');
+      
+      let progress = 0;
+      const totalSteps = 100;
+      const totalTime = 10000; // 10秒
+      const interval = totalTime / totalSteps;
+      
+      const statusMessages = [
+        '正在解析上传的文件...',
+        '验证数据格式正确性...',
+        '连接淘宝数据接口...',
+        '获取问大家问题信息...',
+        '正在比对回复人信息...',
+        '整理检测结果...',
+        '生成Excel报告...',
+        '准备下载文件...'
+      ];
+      
+      const timer = setInterval(() => {
+        progress++;
+        progressBar.style.width = `${progress}%`;
+        progressText.textContent = `${progress}%`;
+        
+        // 更新状态信息
+        const messageIndex = Math.min(Math.floor(progress / (100 / statusMessages.length)), statusMessages.length - 1);
+        statusText.textContent = statusMessages[messageIndex];
+        
+        // 更新剩余时间
+        const timeLeft = Math.round((totalTime - (progress * interval)) / 1000);
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        remainingTime.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (progress >= 100) {
+          clearInterval(timer);
+          // 随机生成检测结果数据
+          const totalItems = Math.floor(Math.random() * 400) + 100;
+          const foundItems = Math.floor(Math.random() * totalItems / 2);
+          document.getElementById('totalItems').textContent = totalItems;
+          document.getElementById('foundItems').textContent = foundItems;
+          
+          // 延迟进入下一步，让用户看到完成状态
+          setTimeout(() => {
+            goToStep(4);
+          }, 1000);
+        }
+      }, interval);
+    }
+    
+    // 下载结果
+    document.getElementById('downloadResult').addEventListener('click', () => {
+      showToast('结果文件下载中...');
+      setTimeout(() => {
+        showToast('结果文件下载完成', 'success');
+      }, 1500);
+    });
+    
+    // FAQ 折叠功能
+    const faqToggles = document.querySelectorAll('.faq-toggle');
+    faqToggles.forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        const content = toggle.nextElementSibling;
+        const icon = toggle.querySelector('i');
+        
+        // 切换当前FAQ项
+        content.classList.toggle('hidden');
+        icon.classList.toggle('rotate-180');
+        
+        // 关闭其他打开的FAQ项
+        faqToggles.forEach(otherToggle => {
+          if (otherToggle !== toggle) {
+            otherToggle.nextElementSibling.classList.add('hidden');
+            otherToggle.querySelector('i').classList.remove('rotate-180');
+          }
+        });
+      });
+    });
+    
+    // 提示消息功能
+    function showToast(message, type = 'info') {
+      // 检查是否已有toast，如有则移除
+      const existingToast = document.querySelector('.toast');
+      if (existingToast) {
+        existingToast.remove();
+      }
+      
+      // 创建toast元素
+      const toast = document.createElement('div');
+      toast.className = `toast fixed bottom-4 right-4 px-4 py-3 rounded-md shadow-lg z-50 transition-all duration-300 transform translate-y-10 opacity-0`;
+      
+      // 设置样式和图标
+      let bgColor, textColor, icon;
+      if (type === 'success') {
+        bgColor = 'bg-success';
+        textColor = 'text-white';
+        icon = 'fa-check-circle';
+      } else if (type === 'error') {
+        bgColor = 'bg-danger';
+        textColor = 'text-white';
+        icon = 'fa-exclamation-circle';
+      } else {
+        bgColor = 'bg-primary';
+        textColor = 'text-white';
+        icon = 'fa-info-circle';
+      }
+      
+      toast.classList.add(bgColor, textColor);
+      toast.innerHTML = `<i class="fa ${icon} mr-2"></i>${message}`;
+      
+      // 添加到页面
+      document.body.appendChild(toast);
+      
+      // 显示动画
+      setTimeout(() => {
+        toast.classList.remove('translate-y-10', 'opacity-0');
+      }, 10);
+      
+      // 自动关闭
+      setTimeout(() => {
+        toast.classList.add('translate-y-10', 'opacity-0');
+        setTimeout(() => {
+          toast.remove();
+        }, 300);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
